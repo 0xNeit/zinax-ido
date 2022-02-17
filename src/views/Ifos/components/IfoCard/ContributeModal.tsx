@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { useWeb3React } from '@web3-react/core'
 import BigNumber from 'bignumber.js'
 import { ethers } from 'ethers'
-import { Modal, LinkExternal, Box, Text } from '@pancakeswap-libs/uikit'
+import { Modal, LinkExternal, Box, Text, Flex } from '@pancakeswap-libs/uikit'
 import BalanceInput from 'components/BalanceInput'
 import useTokenBalance from 'hooks/useTokenBalance'
 import { getBalanceNumber } from 'utils/formatBalance'
@@ -10,22 +10,42 @@ import useI18n from 'hooks/useI18n'
 import ApproveConfirmButtons from 'views/Profile/components/ApproveConfirmButtons'
 import useApproveConfirmTransaction from 'hooks/useApproveConfirmTransaction'
 import { useERC20 } from 'hooks/useContract'
+import { UserInfo } from 'views/Ifos/hooks/useGetWalletIfoData'
 
 interface Props {
   currency: string
   contract: any
   currencyAddress: string
+  maxAmount: BigNumber
+  minAmount: BigNumber
+  userInfo: UserInfo
+  tokenPerLPT: BigNumber
+  remainingTokenAmount: BigNumber
   onSuccess: (amount: BigNumber) => void
   onDismiss?: () => void
 }
 
-const ContributeModal: React.FC<Props> = ({ currency, contract, currencyAddress, onDismiss, onSuccess }) => {
+const ContributeModal: React.FC<Props> = ({
+  currency,
+  contract,
+  currencyAddress,
+  maxAmount,
+  minAmount,
+  userInfo,
+  tokenPerLPT,
+  remainingTokenAmount,
+  onDismiss,
+  onSuccess,
+}) => {
   const [value, setValue] = useState('')
   const { account } = useWeb3React()
   const raisingTokenContract = useERC20(currencyAddress)
   const balance = getBalanceNumber(useTokenBalance(currencyAddress))
   const TranslateString = useI18n()
   const valueWithTokenDecimals = new BigNumber(value).times(new BigNumber(10).pow(18))
+  const remainingCapForUser = new BigNumber(maxAmount).minus(userInfo.usedCAPAmount)
+  const usableCap = getBalanceNumber(remainingTokenAmount.dividedBy(tokenPerLPT).div(new BigNumber(10).pow(18)))
+
   const {
     isApproving,
     isApproved,
@@ -49,7 +69,9 @@ const ContributeModal: React.FC<Props> = ({ currency, contract, currencyAddress,
         .send({ from: account })
     },
     onConfirm: () => {
-      return contract.methods.deposit(valueWithTokenDecimals.toString()).send({ from: account })
+      return contract.methods
+      .deposit(contract.options.address, valueWithTokenDecimals.toString())
+      .send({ from: account })
     },
     onSuccess: async () => {
       onDismiss()
@@ -66,27 +88,58 @@ const ContributeModal: React.FC<Props> = ({ currency, contract, currencyAddress,
           onChange={(e) => setValue(e.currentTarget.value)}
           symbol={currency}
           max={balance}
-          onSelectMax={() => setValue(balance.toString())}
+          onSelectMax={() => setValue(BigNumber.minimum(balance, getBalanceNumber(remainingCapForUser)).toString())}
           mb="24px"
         />
-        <Text as="p" mb="24px">
-          {TranslateString(
-            999,
-            "If you don't contribute enough LP tokens, you may not receive any IFO tokens at all and will only receive a full refund of your LP tokens.",
-          )}
-        </Text>
+        <Flex mt="24px" mb="4px" alignItems="center" justifyContent="space-between">
+          <Text mr="8px" color="textSubtle">
+            {TranslateString(999, 'Minimum Cap Per User')}:
+          </Text>
+          <Text mr="8px" color="textSubtle">
+            {getBalanceNumber(minAmount)} BUSD
+          </Text>
+        </Flex>
+        <Flex mb="4px" alignItems="center" justifyContent="space-between">
+          <Text mr="8px" color="textSubtle">
+            {TranslateString(999, 'Maximum Cap Per User')}:
+          </Text>
+          <Text mr="8px" color="textSubtle">
+            {getBalanceNumber(maxAmount)} BUSD
+          </Text>
+        </Flex>
+        <Flex mb="24px" alignItems="center" justifyContent="space-between">
+          <Text mr="8px" color="textSubtle">
+            {TranslateString(999, 'Your Remaining Cap')}:
+          </Text>
+          <Text mr="8px" color="textSubtle">
+            {getBalanceNumber(remainingCapForUser)} BUSD
+          </Text>
+        </Flex>
+        <Flex mb="24px" alignItems="center" justifyContent="space-between">
+          <Text mr="8px" color="textSubtle">
+            {TranslateString(999, 'Rest Cap')}:
+          </Text>
+          <Text mr="8px" color="textSubtle">
+            {usableCap} BUSD
+          </Text>
+        </Flex>
         <ApproveConfirmButtons
           isApproveDisabled={isConfirmed || isConfirming || isApproved}
           isApproving={isApproving}
           isConfirmDisabled={
-            !isApproved || isConfirmed || valueWithTokenDecimals.isNaN() || valueWithTokenDecimals.eq(0)
+            !isApproved ||
+            isConfirmed ||
+            valueWithTokenDecimals.isNaN() ||
+            valueWithTokenDecimals.isLessThan(minAmount) ||
+            valueWithTokenDecimals.isGreaterThan(maxAmount) ||
+            valueWithTokenDecimals.isGreaterThan(remainingCapForUser)
           }
           isConfirming={isConfirming}
           onApprove={handleApprove}
           onConfirm={handleConfirm}
         />
         <LinkExternal
-          href="https://exchange.pancakeswap.finance/#/add/BNB/0x0E09FaBB73Bd3Ade0a17ECC321fD13a19e81cE82"
+          href="https://exchange.pancakeswap.finance/"
           style={{ margin: '16px auto 0' }}
         >
           {`Get ${currency}`}

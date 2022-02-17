@@ -7,28 +7,30 @@ import { useIfoAllowance } from 'hooks/useAllowance'
 import makeBatchRequest from 'utils/makeBatchRequest'
 
 export interface UserInfo {
-  amount: BigNumber
-  claimed: boolean
+  usedCAPAmount: BigNumber
+  purchasedTokenAmount: BigNumber
+  claimedTokenAmount: BigNumber
 }
 
 export interface WalletIfoState {
   isPendingTx: boolean
-  offeringTokenBalance: BigNumber
-  refundingAmount: BigNumber
+  isWhitelisted: boolean
+  claimableTokenAmount: BigNumber
   userInfo: UserInfo
 }
 
 /**
  * Gets all data from an IFO related to a wallet
  */
-const useGetWalletIfoData = (ifo: Ifo) => {
+ const useGetWalletIfoData = (ifo: Ifo) => {
   const [state, setState] = useState<WalletIfoState>({
     isPendingTx: false,
-    offeringTokenBalance: new BigNumber(0),
-    refundingAmount: new BigNumber(0),
+    isWhitelisted: false,
+    claimableTokenAmount: new BigNumber(0),
     userInfo: {
-      amount: new BigNumber(0),
-      claimed: false,
+      usedCAPAmount: new BigNumber(0),
+      purchasedTokenAmount: new BigNumber(0),
+      claimedTokenAmount: new BigNumber(0),
     },
   })
 
@@ -51,7 +53,7 @@ const useGetWalletIfoData = (ifo: Ifo) => {
       ...prevState,
       userInfo: {
         ...prevState.userInfo,
-        amount: prevState.userInfo.amount.plus(amount),
+        amount: prevState.userInfo.usedCAPAmount.plus(amount),
       },
     }))
   }
@@ -68,20 +70,21 @@ const useGetWalletIfoData = (ifo: Ifo) => {
 
   useEffect(() => {
     const fetchIfoData = async () => {
-      const [offeringAmount, userInfoResponse, refundingAmount] = (await makeBatchRequest([
-        contract.methods.getOfferingAmount(account).call,
+      const [userInfoResponse, whitelistResponse, claimableToken] = (await makeBatchRequest([
         contract.methods.userInfo(account).call,
-        contract.methods.getRefundingAmount(account).call,
-      ])) as [string, UserInfo, string]
+        contract.methods.isWhitelisted(account).call,
+        contract.methods.claimableToken(account).call,
+      ])) as [UserInfo, boolean, BigNumber, BigNumber]
 
       setState((prevState) => ({
         ...prevState,
-        offeringTokenBalance: new BigNumber(offeringAmount),
-        refundingAmount: new BigNumber(refundingAmount),
         userInfo: {
-          amount: new BigNumber(userInfoResponse.amount),
-          claimed: userInfoResponse.claimed,
+          usedCAPAmount: new BigNumber(userInfoResponse.usedCAPAmount),
+          purchasedTokenAmount: new BigNumber(userInfoResponse.purchasedTokenAmount),
+          claimedTokenAmount: new BigNumber(userInfoResponse.claimedTokenAmount),
         },
+        isWhitelisted: whitelistResponse,
+        claimableTokenAmount: new BigNumber(claimableToken),
       }))
     }
 

@@ -17,10 +17,9 @@ export interface Props {
 const IfoCardActions: React.FC<Props> = ({ ifo, publicIfoData }) => {
   const {
     isPendingTx,
-    offeringTokenBalance,
-    refundingAmount,
     userInfo,
     contract,
+    claimableTokenAmount,
     setPendingTx,
     addUserContributedAmount,
     setIsClaimed,
@@ -47,14 +46,13 @@ const IfoCardActions: React.FC<Props> = ({ ifo, publicIfoData }) => {
       )}
       {publicIfoData.status === 'finished' && (
         <Claim
-          ifo={ifo}
-          contract={contract}
-          userInfo={userInfo}
-          isPendingTx={isPendingTx}
-          setPendingTx={setPendingTx}
-          offeringTokenBalance={offeringTokenBalance}
-          refundingAmount={refundingAmount}
-          setIsClaimed={setIsClaimed}
+        ifo={ifo}
+        contract={contract}
+        userInfo={userInfo}
+        isPendingTx={isPendingTx}
+        claimableTokenAmount={claimableTokenAmount}
+        setPendingTx={setPendingTx}
+        setIsClaimed={setIsClaimed}
         />
       )}
     </>

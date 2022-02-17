@@ -5,7 +5,7 @@ import { UserInfo } from 'views/Ifos/hooks/useGetWalletIfoData'
 import useI18n from 'hooks/useI18n'
 
 interface PercentageOfTotalProps {
-  userAmount: UserInfo['amount']
+  userAmount: UserInfo['usedCAPAmount']
   totalAmount: BigNumber
 }
 

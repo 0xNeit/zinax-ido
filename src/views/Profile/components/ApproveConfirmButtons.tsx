@@ -71,7 +71,7 @@ const ApproveConfirmButtons: React.FC<ApproveConfirmButtonsProps> = ({
   return (
     <StyledApprovConfirmButtons>
       <Box>
-        <Button
+        <Button variant="danger"
           disabled={isApproveDisabled}
           onClick={onApprove}
           endIcon={isApproving ? spinnerIcon : undefined}
@@ -85,7 +85,7 @@ const ApproveConfirmButtons: React.FC<ApproveConfirmButtonsProps> = ({
         <ChevronBottom />
       </Flex>
       <Box>
-        <Button
+        <Button variant="danger"
           onClick={onConfirm}
           disabled={isConfirmDisabled}
           isLoading={isConfirming}

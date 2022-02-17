@@ -32,7 +32,7 @@ const Display = styled(Text)`
 const IfoCardDetails: React.FC<IfoCardDetailsProps> = ({ ifo, publicIfoData }) => {
   const [isOpen, setIsOpen] = useState(false)
   const TranslateString = useI18n()
-  const { description, cakeToBurn, projectSiteUrl, launchDate, launchTime, saleAmount, raiseAmount } = ifo
+  const { description, projectSiteUrl, launchDate, launchTime, saleAmount, raiseAmount } = ifo
   const { raisingAmount, totalAmount } = publicIfoData
   const handleToggle = () => setIsOpen(!isOpen)
 
@@ -76,10 +76,6 @@ const IfoCardDetails: React.FC<IfoCardDetailsProps> = ({ ifo, publicIfoData }) =
             <Item>
               <Display>{TranslateString(999, 'To raise (USD)')}</Display>
               <Text>{raiseAmount}</Text>
-            </Item>
-            <Item>
-              <Display>{TranslateString(586, 'CAKE to burn (USD)')}</Display>
-              <Text>{cakeToBurn}</Text>
             </Item>
             <Item>
               <Display>{TranslateString(999, 'Total raised (% of target)')}</Display>

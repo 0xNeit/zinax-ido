@@ -13,13 +13,11 @@ export interface Ifo {
   launchTime: string
   saleAmount: string
   raiseAmount: string
-  cakeToBurn: string
   projectSiteUrl: string
   currency: string
   currencyAddress: string
   tokenDecimals: number
   tokenSymbol: string
-  releaseBlockNumber: number
   campaignId?: string
 }
 

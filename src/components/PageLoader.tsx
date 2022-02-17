@@ -1,6 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
-import { Spinner } from '@pancakeswap-libs/uikit'
+import { Button } from '@pancakeswap-libs/uikit'
 import Page from './layout/Page'
 
 const Wrapper = styled(Page)`
@@ -12,7 +12,7 @@ const Wrapper = styled(Page)`
 const PageLoader: React.FC = () => {
   return (
     <Wrapper>
-      <Spinner />
+      <Button variant="danger">Loading...</Button>
     </Wrapper>
   )
 }

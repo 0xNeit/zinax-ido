@@ -1,10 +1,10 @@
 {
-  "short_name": "PancakeSwap",
-  "name": "PancakeSwap",
-  "description": "Farm CAKE with Pancake LP Tokens",
+  "short_name": "Zinax IDO",
+  "name": "Zinax IDO",
+  "description": "Buy Zinax from our IDO sale",
   "icons": [
     {
-      "src": "favicon.ico",
+      "src": "favicon.png",
       "type": "image/x-icon",
       "sizes": "256x256"
     }

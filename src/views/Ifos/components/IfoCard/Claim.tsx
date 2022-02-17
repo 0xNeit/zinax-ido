@@ -2,6 +2,7 @@ import React from 'react'
 import styled from 'styled-components'
 import { useWeb3React } from '@web3-react/core'
 import { Contract } from 'web3-eth-contract'
+import BigNumber from 'bignumber.js'
 import { AutoRenewIcon, Box, Button, Flex, Text } from '@pancakeswap-libs/uikit'
 import { useToast } from 'state/hooks'
 import useI18n from 'hooks/useI18n'
@@ -9,16 +10,14 @@ import { getBalanceNumber } from 'utils/formatBalance'
 import { Ifo } from 'config/constants/types'
 import { UserInfo, WalletIfoState } from '../../hooks/useGetWalletIfoData'
 import BalanceInUsd from './BalanceInUsd'
-import MetaLabel from './MetaLabel'
 
 interface ClaimProps {
   ifo: Ifo
   contract: Contract
   userInfo: UserInfo
   isPendingTx: WalletIfoState['isPendingTx']
+  claimableTokenAmount: BigNumber
   setPendingTx: (status: boolean) => void
-  offeringTokenBalance: WalletIfoState['offeringTokenBalance']
-  refundingAmount: WalletIfoState['refundingAmount']
   setIsClaimed: () => void
 }
 
@@ -36,29 +35,30 @@ const Claim: React.FC<ClaimProps> = ({
   contract,
   userInfo,
   isPendingTx,
+  claimableTokenAmount,
   setPendingTx,
-  offeringTokenBalance,
-  refundingAmount,
   setIsClaimed,
 }) => {
   const TranslateString = useI18n()
   const { account } = useWeb3React()
-  const didContribute = userInfo.amount.gt(0)
-  const canClaim = !userInfo.claimed
-  const contributedBalance = getBalanceNumber(userInfo.amount)
-  const refundedBalance = getBalanceNumber(refundingAmount).toFixed(userInfo.amount.eq(0) ? 0 : DISPLAY_DECIMALS)
-  const { tokenSymbol, tokenDecimals } = ifo
-  const rewardBalance = getBalanceNumber(offeringTokenBalance, tokenDecimals)
+  const didContribute = userInfo.usedCAPAmount.gt(0)
+  const canClaim = claimableTokenAmount.gt(0)
+  const contributedBalance = getBalanceNumber(userInfo.usedCAPAmount)
+  const { name, tokenSymbol, tokenDecimals } = ifo
+  const rewardBalance = getBalanceNumber(userInfo.purchasedTokenAmount, tokenDecimals)
   const { toastError, toastSuccess } = useToast()
+  const claimedPercent = userInfo.purchasedTokenAmount.gt(0)
+    ? userInfo.claimedTokenAmount.dividedBy(userInfo.purchasedTokenAmount).multipliedBy(100).toString()
+    : '0'
 
   const handleClaim = async () => {
     try {
       setPendingTx(true)
-      await contract.methods.harvest().send({ from: account })
+      await contract.methods.claim().send({ from: account })
       setIsClaimed()
       toastSuccess('Success!', 'You have successfully claimed your rewards.')
     } catch (error) {
-      toastError('Error', error?.message)
+      toastError('Error', 'Error')
       console.error(error)
     } finally {
       setPendingTx(false)
@@ -71,40 +71,70 @@ const Claim: React.FC<ClaimProps> = ({
         <Box>
           <Flex mb="4px">
             <Text as="span" bold fontSize="12px" mr="4px" textTransform="uppercase">
-              LP Tokens
+              BUSD Tokens
             </Text>
             <Text as="span" color="textSubtle" fontSize="12px" textTransform="uppercase" bold>
               Committed
             </Text>
           </Flex>
-          <Text fontSize="20px" bold color={offeringTokenBalance.gt(0) ? 'text' : 'textDisabled'}>
-            {contributedBalance.toFixed(userInfo.amount.eq(0) ? 0 : DISPLAY_DECIMALS)}
+          <Text fontSize="20px" bold color={userInfo.usedCAPAmount.gt(0) ? 'text' : 'textDisabled'}>
+            {contributedBalance.toFixed(userInfo.usedCAPAmount.eq(0) ? 0 : DISPLAY_DECIMALS)}
           </Text>
-          <MetaLabel>
-            {canClaim
-              ? TranslateString(999, `${refundedBalance} to reclaim`, { num: refundedBalance })
-              : TranslateString(999, `${refundedBalance} reclaimed`, { num: refundedBalance })}
-          </MetaLabel>
         </Box>
         <Box>
           <Flex mb="4px">
             <Text as="span" bold fontSize="12px" mr="4px" textTransform="uppercase">
               {tokenSymbol}
             </Text>
-            {!canClaim ? (
-              <Text as="span" color="textSubtle" fontSize="12px" textTransform="uppercase" bold>
-                Claimed
-              </Text>
-            ) : (
-              <Text as="span" color="textSubtle" fontSize="12px" textTransform="uppercase" bold>
-                To Claim
-              </Text>
-            )}
+            <Text as="span" color="textSubtle" fontSize="12px" textTransform="uppercase" bold>
+              ALLOCATED
+            </Text>
           </Flex>
-          <Text fontSize="20px" bold color={offeringTokenBalance.gt(0) ? 'text' : 'textDisabled'}>
-            {rewardBalance.toFixed(offeringTokenBalance.eq(0) ? 0 : DISPLAY_DECIMALS)}
+          <Text fontSize="20px" bold color={userInfo.purchasedTokenAmount.gt(0) ? 'text' : 'textDisabled'}>
+            {rewardBalance.toFixed(userInfo.purchasedTokenAmount.eq(0) ? 0 : DISPLAY_DECIMALS)}
           </Text>
           {canClaim && <BalanceInUsd token={tokenSymbol} balance={rewardBalance} />}
+        </Box>
+        <Box>
+          <Flex mb="4px">
+            <Text as="span" bold fontSize="12px" mr="4px" textTransform="uppercase">
+              {tokenSymbol}
+            </Text>
+            <Text as="span" color="textSubtle" fontSize="12px" textTransform="uppercase" bold>
+              Unlocked
+            </Text>
+          </Flex>
+          <Text fontSize="20px" bold color={claimableTokenAmount.gt(0) ? 'text' : 'textDisabled'}>
+            {getBalanceNumber(claimableTokenAmount).toFixed(4)}
+          </Text>
+          {canClaim && <BalanceInUsd token={tokenSymbol} balance={rewardBalance} />}
+        </Box>
+        <Box>
+          <Flex mb="4px">
+            <Text as="span" bold fontSize="12px" mr="4px" textTransform="uppercase">
+              {tokenSymbol}
+            </Text>
+            <Text as="span" color="textSubtle" fontSize="12px" textTransform="uppercase" bold>
+              Claimed
+            </Text>
+          </Flex>
+          <Text fontSize="20px" bold color={userInfo.claimedTokenAmount.gt(0) ? 'text' : 'textDisabled'}>
+            {getBalanceNumber(userInfo.claimedTokenAmount).toFixed(4)}
+          </Text>
+          {canClaim && <BalanceInUsd token={tokenSymbol} balance={rewardBalance} />}
+        </Box>
+        <Box>
+          <Flex mb="4px">
+            <Text as="span" bold fontSize="12px" mr="4px" textTransform="uppercase">
+              Claimed
+            </Text>
+            <Text as="span" color="textSubtle" fontSize="12px" textTransform="uppercase" bold>
+              Percent
+            </Text>
+          </Flex>
+          <Text fontSize="20px" bold color={userInfo.purchasedTokenAmount.gt(0) ? 'text' : 'textDisabled'}>
+            {claimedPercent}%
+          </Text>
         </Box>
       </AmountGrid>
       {didContribute ? (
@@ -116,14 +146,19 @@ const Claim: React.FC<ClaimProps> = ({
           isLoading={isPendingTx}
           endIcon={isPendingTx ? <AutoRenewIcon spin color="currentColor" /> : null}
         >
-          {canClaim ? TranslateString(999, 'Claim') : TranslateString(999, 'Claimed')}
+          {canClaim ? TranslateString(999, 'Claim') : TranslateString(999, 'Nothing to Claim')}
         </Button>
       ) : (
         <Button disabled width="100%" mb="24px">
           {TranslateString(999, 'Nothing to Claim')}
         </Button>
       )}
-      <Text mt="4px">{TranslateString(999, "You'll be refunded any excess tokens when you claim")}</Text>
+      <Text mt="4px">
+        {TranslateString(
+          999,
+          `If you see allocated ${name} that you cannot claim, kindly check IFO vesting schedule from the project website.`,
+        )}
+      </Text>
     </>
   )
 }
