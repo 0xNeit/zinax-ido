@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from 'react'
 import BigNumber from 'bignumber.js'
+import { ethers } from 'ethers'
 import { kebabCase } from 'lodash'
 import { useWeb3React } from '@web3-react/core'
 import { Toast, toastTypes } from '@macaronswap-libs/uikit'
@@ -21,6 +22,7 @@ import { fetchProfile } from './profile'
 import { fetchTeam, fetchTeams } from './teams'
 import { fetchAchievements } from './achievements'
 import { fetchPrices } from './prices'
+import fetchReferralInfo from './referrals/fetchReferralsInfo'
 
 export const useFetchPublicData = () => {
   const dispatch = useDispatch()
@@ -133,6 +135,29 @@ export const useProfile = () => {
   return { profile: data, hasProfile: isInitialized && hasRegistered, isInitialized, isLoading }
 }
 
+// Referrals
+
+const saveReferrer = async (account, ref) => {
+  if (!ethers.utils.isAddress(ref) || account === ref) {
+    return
+  }
+  const referralData = await fetchReferralInfo(account)
+  if (referralData.referrer === '0x0000000000000000000000000000000000000000') {
+    localStorage.setItem('REFERRER', ref)
+  }
+}
+export const useSaveReferrer = () => {
+  // eslint-disable-next-line
+  const search = window.location.search
+  const ref = new URLSearchParams(search).get('ref')
+  const { account } = useWeb3React()
+  useEffect(() => {
+    if (account && ref) {
+      saveReferrer(account, ref)
+    }
+  }, [account, ref])
+}
+
 // Teams
 
 export const useTeam = (id: number) => {
@@ -214,4 +239,8 @@ export const usePriceCakeBusd = (): BigNumber => {
 // Block
 export const useBlock = (): Block => {
   return useSelector((state: State) => state.block)
+}
+
+export const useGetReferralInfo = () => {
+  return useSelector((state: State) => state.referrals.data)
 }

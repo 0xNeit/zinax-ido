@@ -121,6 +121,18 @@ export interface PriceState {
   data: PriceList
 }
 
+// Referrals
+export interface ReferralInfo {
+  referralsCount: number
+  totalReferralCommissions: number
+  referrer: string
+}
+
+export interface ReferralState {
+  isLoading: boolean
+  data: ReferralInfo
+}
+
 // Block
 
 export interface Block {
@@ -138,4 +150,5 @@ export interface State {
   teams: TeamsState
   achievements: AchievementState
   block: Block
+  referrals: ReferralState
 }

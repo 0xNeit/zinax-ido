@@ -44,3 +44,6 @@ export const getPointCenterIfoAddress = () => {
 export const getBunnySpecialAddress = () => {
   return getAddress(addresses.bunnySpecial)
 }
+export const getReferralsAddress = () => {
+  return getAddress(addresses.referrals)
+}

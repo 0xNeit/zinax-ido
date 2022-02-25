@@ -14,7 +14,6 @@ export interface UserInfo {
 
 export interface WalletIfoState {
   isPendingTx: boolean
-  isWhitelisted: boolean
   claimableTokenAmount: BigNumber
   userInfo: UserInfo
 }
@@ -25,7 +24,6 @@ export interface WalletIfoState {
  const useGetWalletIfoData = (ifo: Ifo) => {
   const [state, setState] = useState<WalletIfoState>({
     isPendingTx: false,
-    isWhitelisted: false,
     claimableTokenAmount: new BigNumber(0),
     userInfo: {
       usedCAPAmount: new BigNumber(0),
@@ -70,11 +68,10 @@ export interface WalletIfoState {
 
   useEffect(() => {
     const fetchIfoData = async () => {
-      const [userInfoResponse, whitelistResponse, claimableToken] = (await makeBatchRequest([
+      const [userInfoResponse, claimableToken] = (await makeBatchRequest([
         contract.methods.userInfo(account).call,
-        contract.methods.isWhitelisted(account).call,
         contract.methods.claimableToken(account).call,
-      ])) as [UserInfo, boolean, BigNumber, BigNumber]
+      ])) as [UserInfo, BigNumber, BigNumber]
 
       setState((prevState) => ({
         ...prevState,
@@ -83,7 +80,6 @@ export interface WalletIfoState {
           purchasedTokenAmount: new BigNumber(userInfoResponse.purchasedTokenAmount),
           claimedTokenAmount: new BigNumber(userInfoResponse.claimedTokenAmount),
         },
-        isWhitelisted: whitelistResponse,
         claimableTokenAmount: new BigNumber(claimableToken),
       }))
     }

@@ -25,6 +25,16 @@ interface Props {
   onDismiss?: () => void
 }
 
+const EMPTY_ADDRESS = '0x0000000000000000000000000000000000000000'
+
+function getReferrer() {
+  const ref = localStorage.getItem('REFERRER')
+  if (ref) {
+    return ref
+  }
+  return EMPTY_ADDRESS
+}
+
 const ContributeModal: React.FC<Props> = ({
   currency,
   contract,
@@ -45,6 +55,7 @@ const ContributeModal: React.FC<Props> = ({
   const valueWithTokenDecimals = new BigNumber(value).times(new BigNumber(10).pow(18))
   const remainingCapForUser = new BigNumber(maxAmount).minus(userInfo.usedCAPAmount)
   const usableCap = getBalanceNumber(remainingTokenAmount.dividedBy(tokenPerLPT).div(new BigNumber(10).pow(18)))
+  const referrer = getReferrer()
 
   const {
     isApproving,
@@ -70,7 +81,7 @@ const ContributeModal: React.FC<Props> = ({
     },
     onConfirm: () => {
       return contract.methods
-      .deposit(contract.options.address, valueWithTokenDecimals.toString())
+      .deposit(valueWithTokenDecimals.toString(), referrer)
       .send({ from: account })
     },
     onSuccess: async () => {

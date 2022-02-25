@@ -17,6 +17,11 @@
         "type":"address"
       },
       {
+        "internalType":"contract IERC20",
+        "name":"_zinax",
+        "type":"address"
+      },
+      {
         "internalType":"uint256",
         "name":"_tokenPerLPToken",
         "type":"uint256"
@@ -121,6 +126,31 @@
       {
         "indexed":true,
         "internalType":"address",
+        "name":"user",
+        "type":"address"
+      },
+      {
+        "indexed":true,
+        "internalType":"address",
+        "name":"referrer",
+        "type":"address"
+      },
+      {
+        "indexed":false,
+        "internalType":"uint256",
+        "name":"commissionAmount",
+        "type":"uint256"
+      }
+    ],
+    "name":"ReferralCommissionPaid",
+    "type":"event"
+  },
+  {
+    "anonymous":false,
+    "inputs":[
+      {
+        "indexed":true,
+        "internalType":"address",
         "name":"beneficiary",
         "type":"address"
       },
@@ -139,6 +169,21 @@
     ],
     "name":"TokensPurchased",
     "type":"event"
+  },
+  {
+    "inputs":[
+      
+    ],
+    "name":"MAXIMUM_REFERRAL_COMMISSION_RATE",
+    "outputs":[
+      {
+        "internalType":"uint16",
+        "name":"",
+        "type":"uint16"
+      }
+    ],
+    "stateMutability":"view",
+    "type":"function"
   },
   {
     "inputs":[
@@ -173,14 +218,14 @@
   {
     "inputs":[
       {
-        "internalType":"address",
-        "name":"_account",
-        "type":"address"
-      },
-      {
         "internalType":"uint256",
         "name":"_amount",
         "type":"uint256"
+      },
+      {
+        "internalType":"address",
+        "name":"_referrer",
+        "type":"address"
       }
     ],
     "name":"deposit",
@@ -282,21 +327,6 @@
     "inputs":[
       
     ],
-    "name":"getWhitelistedCount",
-    "outputs":[
-      {
-        "internalType":"uint256",
-        "name":"",
-        "type":"uint256"
-      }
-    ],
-    "stateMutability":"view",
-    "type":"function"
-  },
-  {
-    "inputs":[
-      
-    ],
     "name":"isOwner",
     "outputs":[
       {
@@ -313,25 +343,6 @@
       
     ],
     "name":"isSaleActive",
-    "outputs":[
-      {
-        "internalType":"bool",
-        "name":"",
-        "type":"bool"
-      }
-    ],
-    "stateMutability":"view",
-    "type":"function"
-  },
-  {
-    "inputs":[
-      {
-        "internalType":"address",
-        "name":"_address",
-        "type":"address"
-      }
-    ],
-    "name":"isWhitelisted",
     "outputs":[
       {
         "internalType":"bool",
@@ -456,6 +467,21 @@
     "inputs":[
       
     ],
+    "name":"referralCommissionRate",
+    "outputs":[
+      {
+        "internalType":"uint16",
+        "name":"",
+        "type":"uint16"
+      }
+    ],
+    "stateMutability":"view",
+    "type":"function"
+  },
+  {
+    "inputs":[
+      
+    ],
     "name":"releaseBlock",
     "outputs":[
       {
@@ -502,26 +528,6 @@
       
     ],
     "name":"renounceOwnership",
-    "outputs":[
-      
-    ],
-    "stateMutability":"nonpayable",
-    "type":"function"
-  },
-  {
-    "inputs":[
-      {
-        "internalType":"address[]",
-        "name":"_accounts",
-        "type":"address[]"
-      },
-      {
-        "internalType":"uint256[]",
-        "name":"_amounts",
-        "type":"uint256[]"
-      }
-    ],
-    "name":"setAllocations",
     "outputs":[
       
     ],
@@ -621,6 +627,21 @@
   {
     "inputs":[
       {
+        "internalType":"uint16",
+        "name":"_referralCommissionRate",
+        "type":"uint16"
+      }
+    ],
+    "name":"setReferralCommissionRate",
+    "outputs":[
+      
+    ],
+    "stateMutability":"nonpayable",
+    "type":"function"
+  },
+  {
+    "inputs":[
+      {
         "internalType":"uint256",
         "name":"_releaseBlock",
         "type":"uint256"
@@ -657,6 +678,21 @@
       }
     ],
     "name":"setStartBlock",
+    "outputs":[
+      
+    ],
+    "stateMutability":"nonpayable",
+    "type":"function"
+  },
+  {
+    "inputs":[
+      {
+        "internalType":"contract IZinaxReferral",
+        "name":"_zinaxReferral",
+        "type":"address"
+      }
+    ],
+    "name":"setZinaxReferral",
     "outputs":[
       
     ],
@@ -811,6 +847,36 @@
         "internalType":"uint256",
         "name":"claimedTokenAmount",
         "type":"uint256"
+      }
+    ],
+    "stateMutability":"view",
+    "type":"function"
+  },
+  {
+    "inputs":[
+      
+    ],
+    "name":"zinax",
+    "outputs":[
+      {
+        "internalType":"contract IERC20",
+        "name":"",
+        "type":"address"
+      }
+    ],
+    "stateMutability":"view",
+    "type":"function"
+  },
+  {
+    "inputs":[
+      
+    ],
+    "name":"zinaxReferral",
+    "outputs":[
+      {
+        "internalType":"contract IZinaxReferral",
+        "name":"",
+        "type":"address"
       }
     ],
     "stateMutability":"view",
